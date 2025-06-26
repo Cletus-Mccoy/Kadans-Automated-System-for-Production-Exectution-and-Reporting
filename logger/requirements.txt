@@ -1,0 +1,6 @@
+opcua
+psycopg2-binary
+pyyaml
+cryptography
+pandas
+sqlalchemy

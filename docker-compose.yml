@@ -1,0 +1,98 @@
+services:
+
+# POSTGRES DATABASE
+    db:
+      image: postgres:16
+      container_name: machine_db
+      environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_PORT: ${POSTGRES_PORT}
+      volumes:
+        - pg_data:/var/lib/postgresql/data
+      networks:
+        - metanet
+      restart: unless-stopped
+
+# WEB UI FOR FORMS
+    appsmith:
+      image: appsmith/appsmith-ce
+      container_name: appsmith
+      ports:
+        - "8081:80"
+      networks:
+        - metanet
+      restart: unless-stopped
+      volumes:
+        - appsmith_data:/appsmith-stacks
+
+# WEB UI FOR DASHBOARDS
+    superset:
+      build:
+        context: ./superset
+      container_name: superset
+      ports:
+        - "${SUPERSET_PORT}:8088"
+      environment:
+        - SUPERSET_SECRET_KEY=${SUPERSET_SECRET_KEY}
+      volumes:
+        - superset_home:/app/superset_home
+      depends_on:
+        - db
+      networks:
+        - metanet
+      restart: unless-stopped
+      command: >
+        /bin/bash -c "
+        superset db upgrade &&
+        superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@example.com --password admin &&
+        superset init &&
+        gunicorn --bind superset:8088 'superset.app:create_app()'
+        "
+
+# PGADMIN FOR POSTGRES
+    pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin
+      environment:
+        PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+        PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      ports:
+        - "${PGADMIN_PORT}:80"
+      volumes:
+        - pgadmin_data:/var/lib/pgadmin
+      networks:
+        - metanet
+      depends_on:
+        - db
+      restart: unless-stopped
+
+# CUSTOM OPC UA LOGGER
+    logger:
+      build:
+        context: ./logger
+      container_name: machine_logger
+      depends_on:
+        - db
+      environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_HOST: db
+        POSTGRES_PORT: ${POSTGRES_PORT}
+      volumes:
+        - ./logger/config.yaml:/app/config.yaml
+      networks:
+        - metanet
+      restart: unless-stopped
+
+volumes:
+  pg_data:
+  pgadmin_data:
+  superset_home:
+  appsmith_data:
+
+networks:
+  metanet:
+    driver: bridge

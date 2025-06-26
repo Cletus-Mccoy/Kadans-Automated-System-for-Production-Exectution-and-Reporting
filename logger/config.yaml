@@ -1,0 +1,32 @@
+machines:
+- name: machine_A
+  opcua_url: opc.tcp://localhost:4840
+  variables:
+  - name: Temperature
+    node_id: ns=2;i=2
+    trigger: on_cycle
+    type: REAL
+  - name: Pressure
+    node_id: ns=2;i=3
+    trigger: on_cycle
+    type: INT
+  - name: Status
+    node_id: ns=2;i=4
+    trigger: on_cycle
+    type: BOOL
+  - name: Color
+    node_id: ns=2;i=5
+    trigger: on_cycle
+    type: STRING
+  - name: DefectType
+    node_id: ns=2;i=6
+    trigger: on_cycle
+    type: STRING
+  - name: Supplier
+    node_id: ns=2;i=7
+    trigger: on_cycle
+    type: STRING
+  - name: BatchID
+    node_id: ns=2;i=8
+    trigger: on_cycle
+    type: STRING

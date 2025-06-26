@@ -1,0 +1,8 @@
+Name,Type
+Temperature,REAL
+Pressure,INT
+Status,BOOL
+Color,STRING
+DefectType,STRING
+Supplier,STRING
+BatchID,STRING
